@@ -54,7 +54,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:4200",
-                "https://edubridge-frontend-angular-ujin-llbrvwfpl.vercel.app"
+                "https://edubridge-frontend-angular-*.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
