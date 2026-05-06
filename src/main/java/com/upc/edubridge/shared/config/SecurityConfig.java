@@ -54,7 +54,10 @@ public class SecurityConfig {
         
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "http://localhost",
+                "https://localhost",
+                "capacitor://localhost"
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
