@@ -35,7 +35,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/error", "/login/**", "/favicon.ico").permitAll()
 
-                        .anyRequest().permitAll() // Abrimos todo temporalmente para asegurar el funcionamiento
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -51,10 +51,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "https://edubridge-frontend-angular-ujin-llbrvwfpl.vercel.app"
+        ));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
