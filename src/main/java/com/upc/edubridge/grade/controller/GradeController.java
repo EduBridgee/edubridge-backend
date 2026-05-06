@@ -17,8 +17,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/grades")
-@CrossOrigin(origins = "http://localhost:4200")
-@RequiredArgsConstructor // Inyección automática por constructor
+@CrossOrigin(origins = "https://edubridge-frontend-angular-ujin-llbrvwfpl.vercel.app")
+@RequiredArgsConstructor
 public class GradeController {
 
     private final GradeRepository gradeRepository;
