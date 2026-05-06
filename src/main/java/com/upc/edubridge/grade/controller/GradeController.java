@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("https://edubridge-backend-v2.onrender.com/api/grades")
-@CrossOrigin(origins = "https://edubridge-backend-v2.onrender.com")
+@RequestMapping("/api/grades")
 @RequiredArgsConstructor
 public class GradeController {
 
@@ -58,7 +57,7 @@ public class GradeController {
     }
 
 
-    @GetMapping("https://edubridge-backend-v2.onrender.com/student/{studentId}")
+    @GetMapping("/student/{studentId}")
     public ResponseEntity<List<Grade>> getGradesByStudent(@PathVariable Long studentId) {
         List<Grade> grades = gradeRepository.findByStudentId(studentId);
         return ResponseEntity.ok(grades);
