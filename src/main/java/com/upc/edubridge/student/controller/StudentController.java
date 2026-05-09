@@ -56,7 +56,11 @@ public class StudentController {
                     student.setAttendedClasses(studentDetails.getAttendedClasses());
                     student.setAttendancePercentage(studentDetails.getAttendancePercentage());
 
-                    Student updatedStudent = studentRepository.save(student);
+                    if (studentDetails.getPassword() != null && !studentDetails.getPassword().isEmpty()) {
+                        student.setPassword(studentDetails.getPassword());
+                    }
+
+                    Student updatedStudent = studentService.save(student);
 
                     System.out.println(">> EduBridge: Registro de " + student.getName() + " actualizado en DB.");
                     return ResponseEntity.ok(updatedStudent);
@@ -68,6 +72,6 @@ public class StudentController {
         if (student.getAverageGrade() == null) student.setAverageGrade(0.0);
         if (student.getRiskLevel() == null) student.setRiskLevel("Bajo");
 
-        return studentRepository.save(student);
+        return studentService.save(student);
     }
 }
