@@ -49,7 +49,6 @@ public class AuthService {
 
     public Student register(Student student) {
         student.setPassword(passwordEncoder.encode(student.getPassword()));
-        // Por defecto, estableceremos el rol en estudiante si no tiene uno
         if (student.getRole() == null || student.getRole().isEmpty()) {
             student.setRole("estudiante");
         }
