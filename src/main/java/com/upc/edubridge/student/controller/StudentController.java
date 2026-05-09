@@ -63,4 +63,11 @@ public class StudentController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+    @PostMapping
+    public Student createStudent(@RequestBody Student student) {
+        if (student.getAverageGrade() == null) student.setAverageGrade(0.0);
+        if (student.getRiskLevel() == null) student.setRiskLevel("Bajo");
+
+        return studentRepository.save(student);
+    }
 }
