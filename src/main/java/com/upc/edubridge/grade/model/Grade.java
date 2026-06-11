@@ -18,6 +18,10 @@ public class Grade {
 
     private Double value;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "evaluation_type")
+    private EvaluationType type;
+
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
