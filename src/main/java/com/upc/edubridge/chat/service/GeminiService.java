@@ -2,6 +2,8 @@ package com.upc.edubridge.chat.service;
 
 import com.upc.edubridge.tutoring.model.TutoringSession;
 import com.upc.edubridge.tutoring.repository.TutoringRepository;
+import com.upc.edubridge.teacher.model.Teacher;
+import com.upc.edubridge.teacher.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,13 +19,19 @@ import java.util.Map;
 @Service
 public class GeminiService {
 
-    @Value("${google.gemini.api.key}")
+    @Value("${nvidia.api.key}")
     private String apiKey;
 
     private final WebClient webClient;
 
     @Autowired
     private TutoringRepository tutoringRepository;
+
+    @Autowired
+    private TeacherRepository teacherRepository; 
+
+    @Autowired
+    private com.upc.edubridge.course.repository.CourseRepository courseRepository;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build();
@@ -69,6 +77,9 @@ public class GeminiService {
         }
     }
 
+    
+    
+    
     private String procesarIntencion(String text) {
         if (text == null) return "";
 
@@ -79,23 +90,50 @@ public class GeminiService {
                 String dataRaw = text.substring(start, end);
 
                 String[] parts = dataRaw.split("\\|");
-                String curso = parts[0];
+                String cursoNombre = parts[0].trim();
                 LocalDateTime fechaHora = LocalDateTime.parse(parts[1]);
 
+                
+                String nombreProfesorReal = "Prof. Por Asignar";
+                try {
+                    List<com.upc.edubridge.course.model.Course> cursos = courseRepository.findAll();
+                    for (com.upc.edubridge.course.model.Course c : cursos) {
+                        if (c.getName().equalsIgnoreCase(cursoNombre) && c.getTeacher() != null) {
+                            nombreProfesorReal = c.getTeacher().getName();
+                            break;
+                        }
+                    }
+                    if (nombreProfesorReal.equals("Prof. Por Asignar")) {
+                        List<Teacher> profesores = teacherRepository.findAll();
+                        for (Teacher p : profesores) {
+                            if (p.getCourse() != null && p.getCourse().getName().equalsIgnoreCase(cursoNombre)) {
+                                nombreProfesorReal = p.getName();
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Aviso: Falló la vinculación del docente real, usando fallback: " + e.getMessage());
+                }
+
+                
                 TutoringSession session = new TutoringSession();
-                session.setCourseName(curso);
-                session.setTeacherName("Prof. Asistente IA");
-                session.setTopic("Consulta agendada vía Chat");
+                session.setCourseName(cursoNombre);
+                session.setTeacherName(nombreProfesorReal); 
+                session.setTopic("Consulta agendada vía Chatbot AI");
                 session.setStartTime(fechaHora);
                 session.setDurationMinutes(60);
-                session.setStatus("Confirmada");
+
+                
+                session.setStatus("Pendiente");
+
                 session.setType("INDIVIDUAL");
                 session.setStudentCount(1);
 
                 tutoringRepository.save(session);
 
-                return text.substring(0, text.indexOf("[DATA_TUTORING:")).trim()
-                        + "\n\n✅ *Tutoría sincronizada con tu panel a las " + fechaHora.format(DateTimeFormatter.ofPattern("hh:mm a")) + ".*";
+                String textLimpio = text.substring(0, text.indexOf("[DATA_TUTORING:")).trim();
+                return textLimpio + "\n\n✅ *Tutoría registrada como Pendiente con el " + nombreProfesorReal + " para las " + fechaHora.format(DateTimeFormatter.ofPattern("hh:mm a")) + ".*";
 
             } catch (Exception e) {
                 System.err.println("Error procesando data de tutoría: " + e.getMessage());
@@ -122,4 +160,5 @@ public class GeminiService {
         } catch (Exception e) { e.printStackTrace(); }
         return "Respuesta inesperada.";
     }
+    
 }
