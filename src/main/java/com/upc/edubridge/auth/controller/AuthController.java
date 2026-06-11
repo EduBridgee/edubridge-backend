@@ -125,4 +125,26 @@ public class AuthController {
                 ? ResponseEntity.ok(Map.of("message", "Contraseña actualizada correctamente."))
                 : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "El token es inválido o ha expirado."));
     }
+
+    @Operation(
+            summary = "Registrar nuevo estudiante",
+            description = "Crea una nueva cuenta de estudiante en la plataforma EduBridge."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Estudiante registrado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Error en los datos de registro o correo ya existente")
+    })
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Student student) {
+        try {
+            Student registeredStudent = authService.register(student);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Estudiante registrado exitosamente",
+                    "studentId", registeredStudent.getId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Error al registrar el estudiante: " + e.getMessage()));
+        }
+    }
 }
