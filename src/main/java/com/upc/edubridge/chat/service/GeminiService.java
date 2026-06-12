@@ -93,22 +93,38 @@ public class GeminiService {
                 String cursoNombre = parts[0].trim();
                 LocalDateTime fechaHora = LocalDateTime.parse(parts[1]);
 
-                
-                String nombreProfesorReal = "Prof. Por Asignar";
+                // Vincular profesor real según base de datos
+                String nombreProfesorReal = "Por Asignar";
                 try {
                     List<com.upc.edubridge.course.model.Course> cursos = courseRepository.findAll();
                     for (com.upc.edubridge.course.model.Course c : cursos) {
-                        if (c.getName().equalsIgnoreCase(cursoNombre) && c.getTeacher() != null) {
-                            nombreProfesorReal = c.getTeacher().getName();
-                            break;
+                        if (c.getName() != null && cursoNombre != null) {
+                            String nameDb = c.getName().trim();
+                            String nameRequested = cursoNombre.trim();
+                            if (nameDb.equalsIgnoreCase(nameRequested) || 
+                                nameDb.toLowerCase().contains(nameRequested.toLowerCase()) || 
+                                nameRequested.toLowerCase().contains(nameDb.toLowerCase())) {
+                                if (c.getTeacher() != null) {
+                                    nombreProfesorReal = c.getTeacher().getName() != null ? c.getTeacher().getName().trim() : "Por Asignar";
+                                }
+                                cursoNombre = c.getName().trim();
+                                break;
+                            }
                         }
                     }
-                    if (nombreProfesorReal.equals("Prof. Por Asignar")) {
+                    if (nombreProfesorReal.equals("Por Asignar")) {
                         List<Teacher> profesores = teacherRepository.findAll();
                         for (Teacher p : profesores) {
-                            if (p.getCourse() != null && p.getCourse().getName().equalsIgnoreCase(cursoNombre)) {
-                                nombreProfesorReal = p.getName();
-                                break;
+                            if (p.getCourse() != null && p.getCourse().getName() != null && cursoNombre != null) {
+                                String nameDb = p.getCourse().getName().trim();
+                                String nameRequested = cursoNombre.trim();
+                                if (nameDb.equalsIgnoreCase(nameRequested) || 
+                                    nameDb.toLowerCase().contains(nameRequested.toLowerCase()) || 
+                                    nameRequested.toLowerCase().contains(nameDb.toLowerCase())) {
+                                    nombreProfesorReal = p.getName() != null ? p.getName().trim() : "Por Asignar";
+                                    cursoNombre = p.getCourse().getName().trim();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -133,7 +149,7 @@ public class GeminiService {
                 tutoringRepository.save(session);
 
                 String textLimpio = text.substring(0, text.indexOf("[DATA_TUTORING:")).trim();
-                return textLimpio + "\n\n✅ *Tutoría registrada como Pendiente con el " + nombreProfesorReal + " para las " + fechaHora.format(DateTimeFormatter.ofPattern("hh:mm a")) + ".*";
+                return textLimpio + "\n\n✅ *Tutoría registrada como Pendiente con el Prof. " + nombreProfesorReal + " para las " + fechaHora.format(DateTimeFormatter.ofPattern("hh:mm a")) + ".*";
 
             } catch (Exception e) {
                 System.err.println("Error procesando data de tutoría: " + e.getMessage());
