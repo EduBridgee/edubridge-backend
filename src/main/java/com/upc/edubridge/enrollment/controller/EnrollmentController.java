@@ -25,7 +25,6 @@ import java.util.Optional;
 @RequestMapping("/api/enrollments")
 @RequiredArgsConstructor
 @Tag(name = "Matrículas", description = "Endpoints para gestionar la inscripción de alumnos en cursos")
-@CrossOrigin(origins = "http://localhost:4200")
 public class EnrollmentController {
 
     private final EnrollmentRepository enrollmentRepository;

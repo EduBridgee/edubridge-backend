@@ -19,7 +19,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/teachers")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Profesores", description = "Endpoints para la gestión de docentes en EduBridge")
 public class TeacherController {
 

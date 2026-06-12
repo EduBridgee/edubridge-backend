@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Estudiantes", description = "Endpoints para la gestión de perfiles estudiantiles y métricas académicas")
 public class StudentController {
 

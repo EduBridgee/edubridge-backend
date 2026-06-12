@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+
 @RestController
 @RequestMapping("/api/tutoring")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Tutorías", description = "Endpoints para la gestión y programación de sesiones de tutoría entre docentes y alumnos")
 public class TutoringController {
 

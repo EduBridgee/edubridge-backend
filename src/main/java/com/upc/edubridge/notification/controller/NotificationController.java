@@ -19,7 +19,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/notifications")
 @Tag(name = "Notificaciones", description = "Endpoints para la gestión de alertas y mensajes del sistema")
-@CrossOrigin(origins = "http://localhost:4200") 
 public class NotificationController {
 
     @Autowired

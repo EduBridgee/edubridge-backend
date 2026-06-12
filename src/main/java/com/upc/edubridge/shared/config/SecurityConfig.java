@@ -103,7 +103,10 @@ public class SecurityConfig {
                 "http://localhost",
                 "https://localhost",
                 "capacitor://localhost",
-                "https://edubrigde.me/"
+                "https://edubrigde.me",
+                "https://*.edubrigde.me",
+                "https://edubridge.me",
+                "https://*.edubridge.me"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

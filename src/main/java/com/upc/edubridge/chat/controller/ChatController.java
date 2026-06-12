@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Asistente AI", description = "Endpoints para la interacción con el chatbot inteligente de EduBridge")
 @RequiredArgsConstructor 
 public class ChatController {
