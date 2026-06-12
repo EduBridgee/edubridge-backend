@@ -21,5 +21,6 @@ public class Resource {
     private String meta;
     private String stats;
     private Double rating;
+    @Column(columnDefinition = "TEXT")
     private String img;
 }

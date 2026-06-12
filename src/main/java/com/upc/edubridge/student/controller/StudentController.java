@@ -109,8 +109,7 @@ public class StudentController {
     public Student createStudent(@RequestBody Student student) {
         if (student.getAverageGrade() == null) student.setAverageGrade(0.0);
         if (student.getRiskLevel() == null) student.setRiskLevel("Bajo");
-
-        return studentService.save(student);
+        return studentRepository.save(student);
     }
 
     @DeleteMapping("/{id}")
