@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -22,6 +23,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Estudiantes", description = "Endpoints para la gestión de perfiles estudiantiles y métricas académicas")
 public class StudentController {
+
     @Autowired
     private StudentService studentService;
 

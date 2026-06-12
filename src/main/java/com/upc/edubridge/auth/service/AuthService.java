@@ -25,9 +25,6 @@ public class AuthService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     public Optional<Map<String, Object>> login(LoginRequest request) {
         if ("admin@edubridge.com".equalsIgnoreCase(request.getEmail())) {
             if ("admin123".equals(request.getPassword())) {
@@ -92,13 +89,5 @@ public class AuthService {
 
         tokenRepository.delete(resetToken.get());
         return true;
-    }
-
-    public Student register(Student student) {
-        student.setPassword(passwordEncoder.encode(student.getPassword()));
-        if (student.getRole() == null || student.getRole().isEmpty()) {
-            student.setRole("estudiante");
-        }
-        return studentRepository.save(student);
     }
 }

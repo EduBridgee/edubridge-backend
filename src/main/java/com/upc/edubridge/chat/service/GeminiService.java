@@ -160,5 +160,4 @@ public class GeminiService {
         } catch (Exception e) { e.printStackTrace(); }
         return "Respuesta inesperada.";
     }
-    
 }

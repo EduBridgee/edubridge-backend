@@ -41,11 +41,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 
@@ -107,7 +102,8 @@ public class SecurityConfig {
                 "https://*.vercel.app",
                 "http://localhost",
                 "https://localhost",
-                "capacitor://localhost"
+                "capacitor://localhost",
+                "https://edubrigde.me/"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

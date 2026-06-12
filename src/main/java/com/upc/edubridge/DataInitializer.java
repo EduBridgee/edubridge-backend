@@ -1,3 +1,5 @@
+package com.upc.edubridge;
+
 import com.upc.edubridge.course.model.Course;
 import com.upc.edubridge.course.repository.CourseRepository;
 import com.upc.edubridge.resource.repository.ResourceRepository;
