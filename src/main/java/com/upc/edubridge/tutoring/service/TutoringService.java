@@ -53,4 +53,11 @@ public class TutoringService {
 
         return tutoringRepository.save(session);
     }
-}
+
+    public TutoringSession calificar(Long id, Integer rating) {
+        TutoringSession session = tutoringRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tutoría no encontrada"));
+        session.setRating(rating);
+        return tutoringRepository.save(session);
+    }
+}

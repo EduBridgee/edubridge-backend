@@ -89,4 +89,17 @@ public class TutoringController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @Operation(summary = "Calificar tutoría", description = "Asigna una puntuación (estrellas) a una sesión de tutoría.")
+    @PatchMapping("/{id}/rate")
+    public ResponseEntity<TutoringSession> rate(
+            @Parameter(description = "ID de la sesión", example = "1") @PathVariable Long id,
+            @RequestBody Map<String, Integer> body) {
+        try {
+            Integer rating = body.get("rating");
+            return ResponseEntity.ok(tutoringService.calificar(id, rating));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

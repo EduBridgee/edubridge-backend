@@ -24,4 +24,5 @@ public class TutoringSession {
     private Integer studentCount;
     private String status;
     private String type;
+    private Integer rating;
 }
