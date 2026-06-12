@@ -25,11 +25,4 @@ public class StudentService {
     public Optional<Student> findById(Long id) {
         return studentRepository.findById(id);
     }
-
-    public Student save(Student student) {
-        if (student.getPassword() != null && !student.getPassword().isEmpty()) {
-            student.setPassword(passwordEncoder.encode(student.getPassword()));
-        }
-        return studentRepository.save(student);
-    }
 }
