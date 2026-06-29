@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 public class GeminiService {
 
-    @Value("${nvidia.api.key}")
+    @Value("${openai.api.key}")
     private String apiKey;
 
     private final WebClient webClient;
@@ -34,7 +34,7 @@ public class GeminiService {
     private com.upc.edubridge.course.repository.CourseRepository courseRepository;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build();
+        this.webClient = webClientBuilder.baseUrl("https://api.openai.com").build();
     }
 
     public String getAiResponse(String systemPrompt, String userMessage) {
@@ -46,19 +46,18 @@ public class GeminiService {
                 "Al final de tu respuesta, añade exactamente esto: [DATA_TUTORING:Nombre del Curso|YYYY-MM-DDTHH:mm:ss]. " +
                 "Calcula la fecha según lo que diga el usuario (ej: 'mañana a las 7pm').";
 
-        String contextText = superPrompt + "\n\nUsuario: " + userMessage;
-
         Map<String, Object> body = Map.of(
-                "contents", List.of(
-                        Map.of("parts", List.of(Map.of("text", contextText))))
+                "model", "gpt-4o-mini",
+                "messages", List.of(
+                        Map.of("role", "system", "content", superPrompt),
+                        Map.of("role", "user", "content", userMessage)
+                )
         );
 
         try {
             String rawResponse = webClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/v1beta/models/gemini-1.5-flash:generateContent")
-                            .queryParam("key", apiKey)
-                            .build())
+                    .uri("/v1/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .bodyValue(body)
                     .retrieve()
                     .onStatus(status -> status.isError(), response ->
@@ -73,7 +72,7 @@ public class GeminiService {
             return procesarIntencion(rawResponse);
 
         } catch (Exception e) {
-            return "Error con Gemini 1.5: " + e.getMessage();
+            return "Error con ChatGPT: " + e.getMessage();
         }
     }
 
@@ -160,20 +159,19 @@ public class GeminiService {
 
     private String extractText(Map<?, ?> response) {
         try {
-            if (response != null && response.containsKey("candidates")) {
-                List<?> candidates = (List<?>) response.get("candidates");
-                if (!candidates.isEmpty()) {
-                    Map<?, ?> firstCandidate = (Map<?, ?>) candidates.get(0);
-                    Map<?, ?> content = (Map<?, ?>) firstCandidate.get("content");
-                    if (content != null && content.containsKey("parts")) {
-                        List<?> parts = (List<?>) content.get("parts");
-                        if (!parts.isEmpty()) {
-                            return (String) ((Map<?, ?>) parts.get(0)).get("text");
-                        }
+            if (response != null && response.containsKey("choices")) {
+                List<?> choices = (List<?>) response.get("choices");
+                if (!choices.isEmpty()) {
+                    Map<?, ?> firstChoice = (Map<?, ?>) choices.get(0);
+                    Map<?, ?> message = (Map<?, ?>) firstChoice.get("message");
+                    if (message != null && message.containsKey("content")) {
+                        return (String) message.get("content");
                     }
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return "Respuesta inesperada.";
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+        return "Respuesta inesperada de ChatGPT.";
     }
 }
