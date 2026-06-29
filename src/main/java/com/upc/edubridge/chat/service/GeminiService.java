@@ -222,10 +222,7 @@ public class GeminiService {
 
                 List<com.upc.edubridge.resource.model.Resource> todosRecursos = resourceRepository.findAll();
                 List<com.upc.edubridge.resource.model.Resource> recursosFiltrados = todosRecursos.stream()
-                        .filter(r -> r.getSubject() != null && 
-                                (r.getSubject().equalsIgnoreCase(cursoNombre) || 
-                                 r.getSubject().toLowerCase().contains(cursoNombre.toLowerCase()) || 
-                                 cursoNombre.toLowerCase().contains(r.getSubject().toLowerCase())))
+                        .filter(r -> sonCursosSimilares(r.getSubject(), cursoNombre))
                         .collect(Collectors.toList());
 
                 String textLimpio = text.substring(0, text.indexOf("[RECOMMEND_RESOURCE:")).trim();
@@ -244,6 +241,41 @@ public class GeminiService {
             }
         }
         return text;
+    }
+
+    private boolean sonCursosSimilares(String c1, String c2) {
+        if (c1 == null || c2 == null) return false;
+        String n1 = normalizarTexto(c1);
+        String n2 = normalizarTexto(c2);
+        if (n1.contains(n2) || n2.contains(n1)) return true;
+        
+        String[] palabras1 = c1.toLowerCase().split("\\s+");
+        String[] palabras2 = c2.toLowerCase().split("\\s+");
+        for (String p1 : palabras1) {
+            String p1Norm = normalizarTexto(p1);
+            if (p1Norm.length() < 4 || p1Norm.equals("para") || p1Norm.equals("como")) continue;
+            for (String p2 : palabras2) {
+                String p2Norm = normalizarTexto(p2);
+                if (p2Norm.length() < 4) continue;
+                if (p1Norm.contains(p2Norm) || p2Norm.contains(p1Norm) || 
+                    (p1Norm.startsWith("ingen") && p2Norm.startsWith("ingen"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) return "";
+        return texto.toLowerCase()
+                .replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+                .replace("ñ", "n")
+                .replaceAll("[^a-z0-9]", "");
     }
 
     private String extractText(Map<?, ?> response) {
