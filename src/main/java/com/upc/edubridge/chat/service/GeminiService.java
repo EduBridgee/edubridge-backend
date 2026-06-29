@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class GeminiService {
@@ -32,6 +33,12 @@ public class GeminiService {
 
     @Autowired
     private com.upc.edubridge.course.repository.CourseRepository courseRepository;
+
+    @Autowired
+    private com.upc.edubridge.teacher.repository.TeacherTaskRepository teacherTaskRepository;
+
+    @Autowired
+    private com.upc.edubridge.resource.repository.ResourceRepository resourceRepository;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://api.groq.com/openai").build();
@@ -82,6 +89,7 @@ public class GeminiService {
     private String procesarIntencion(String text) {
         if (text == null) return "";
 
+        // 1. INTENCIÓN: AGENDAR TUTORÍA
         if (text.contains("[DATA_TUTORING:")) {
             try {
                 int start = text.indexOf("[DATA_TUTORING:") + 15;
@@ -131,17 +139,13 @@ public class GeminiService {
                     System.err.println("Aviso: Falló la vinculación del docente real, usando fallback: " + e.getMessage());
                 }
 
-                
                 TutoringSession session = new TutoringSession();
                 session.setCourseName(cursoNombre);
                 session.setTeacherName(nombreProfesorReal); 
                 session.setTopic("Consulta agendada vía Chatbot AI");
                 session.setStartTime(fechaHora);
                 session.setDurationMinutes(60);
-
-                
                 session.setStatus("Pendiente");
-
                 session.setType("INDIVIDUAL");
                 session.setStudentCount(1);
 
@@ -152,6 +156,90 @@ public class GeminiService {
 
             } catch (Exception e) {
                 System.err.println("Error procesando data de tutoría: " + e.getMessage());
+            }
+        }
+
+        // 2. INTENCIÓN: CREAR TAREA DEL DOCENTE
+        if (text.contains("[CREATE_TEACHER_TASK:")) {
+            try {
+                int start = text.indexOf("[CREATE_TEACHER_TASK:") + 21;
+                int end = text.indexOf("]", start);
+                String dataRaw = text.substring(start, end);
+
+                String[] parts = dataRaw.split("\\|");
+                String titulo = parts[0].trim();
+                String tag = parts[1].trim();
+                String fechaVence = parts[2].trim();
+
+                com.upc.edubridge.teacher.model.TeacherTask task = new com.upc.edubridge.teacher.model.TeacherTask();
+                task.setTitle(titulo);
+                task.setTag(tag);
+                task.setStatus("pendiente");
+                task.setProgress(0);
+                task.setDueDate(fechaVence);
+
+                teacherTaskRepository.save(task);
+
+                String textLimpio = text.substring(0, text.indexOf("[CREATE_TEACHER_TASK:")).trim();
+                return textLimpio + "\n\n✅ *Recordatorio creado: '" + titulo + "' (" + tag + ") vence el " + fechaVence + ".*";
+            } catch (Exception e) {
+                System.err.println("Error creando tarea de docente: " + e.getMessage());
+            }
+        }
+
+        // 3. INTENCIÓN: CANCELAR TUTORÍA
+        if (text.contains("[CANCEL_TUTORING:")) {
+            try {
+                int start = text.indexOf("[CANCEL_TUTORING:") + 17;
+                int end = text.indexOf("]", start);
+                String idRaw = text.substring(start, end).trim();
+
+                Long sessionId = Long.valueOf(idRaw);
+                java.util.Optional<TutoringSession> sessionOpt = tutoringRepository.findById(sessionId);
+                if (sessionOpt.isPresent()) {
+                    TutoringSession session = sessionOpt.get();
+                    session.setStatus("Cancelada");
+                    tutoringRepository.save(session);
+
+                    String textLimpio = text.substring(0, text.indexOf("[CANCEL_TUTORING:")).trim();
+                    return textLimpio + "\n\n❌ *Tutoría [ID: " + sessionId + "] de " + session.getCourseName() + " ha sido cancelada.*";
+                } else {
+                    String textLimpio = text.substring(0, text.indexOf("[CANCEL_TUTORING:")).trim();
+                    return textLimpio + "\n\n⚠️ *No se encontró ninguna tutoría con el ID " + sessionId + ".*";
+                }
+            } catch (Exception e) {
+                System.err.println("Error cancelando tutoría: " + e.getMessage());
+            }
+        }
+
+        // 4. INTENCIÓN: RECOMENDAR RECURSOS
+        if (text.contains("[RECOMMEND_RESOURCE:")) {
+            try {
+                int start = text.indexOf("[RECOMMEND_RESOURCE:") + 20;
+                int end = text.indexOf("]", start);
+                String cursoNombre = text.substring(start, end).trim();
+
+                List<com.upc.edubridge.resource.model.Resource> todosRecursos = resourceRepository.findAll();
+                List<com.upc.edubridge.resource.model.Resource> recursosFiltrados = todosRecursos.stream()
+                        .filter(r -> r.getSubject() != null && 
+                                (r.getSubject().equalsIgnoreCase(cursoNombre) || 
+                                 r.getSubject().toLowerCase().contains(cursoNombre.toLowerCase()) || 
+                                 cursoNombre.toLowerCase().contains(r.getSubject().toLowerCase())))
+                        .collect(Collectors.toList());
+
+                String textLimpio = text.substring(0, text.indexOf("[RECOMMEND_RESOURCE:")).trim();
+                
+                if (!recursosFiltrados.isEmpty()) {
+                    String listaRecursosStr = recursosFiltrados.stream()
+                            .map(r -> String.format("📂 *%s* (%s) - Rating: %.1f★\n   [Ver Recurso](%s)", 
+                                    r.getTitle(), r.getType(), r.getRating(), r.getImg()))
+                            .collect(Collectors.joining("\n\n"));
+                    return textLimpio + "\n\nAquí tienes material de estudio recomendado para *" + cursoNombre + "*:\n\n" + listaRecursosStr;
+                } else {
+                    return textLimpio + "\n\n⚠️ *No se encontraron archivos o recursos disponibles en la biblioteca para " + cursoNombre + " actualmente.*";
+                }
+            } catch (Exception e) {
+                System.err.println("Error buscando recursos recomendados: " + e.getMessage());
             }
         }
         return text;
