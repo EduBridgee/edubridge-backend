@@ -34,7 +34,7 @@ public class GeminiService {
     private com.upc.edubridge.course.repository.CourseRepository courseRepository;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://api.openai.com").build();
+        this.webClient = webClientBuilder.baseUrl("https://api.groq.com/openai").build();
     }
 
     public String getAiResponse(String systemPrompt, String userMessage) {
@@ -47,7 +47,7 @@ public class GeminiService {
                 "Calcula la fecha según lo que diga el usuario (ej: 'mañana a las 7pm').";
 
         Map<String, Object> body = Map.of(
-                "model", "gpt-4o-mini",
+                "model", "llama-3.3-70b-specdec",
                 "messages", List.of(
                         Map.of("role", "system", "content", superPrompt),
                         Map.of("role", "user", "content", userMessage)
@@ -72,7 +72,7 @@ public class GeminiService {
             return procesarIntencion(rawResponse);
 
         } catch (Exception e) {
-            return "Error con ChatGPT: " + e.getMessage();
+            return "Error con Groq (Llama): " + e.getMessage();
         }
     }
 
@@ -172,6 +172,6 @@ public class GeminiService {
         } catch (Exception e) { 
             e.printStackTrace(); 
         }
-        return "Respuesta inesperada de ChatGPT.";
+        return "Respuesta inesperada de Groq (Llama).";
     }
 }
