@@ -56,7 +56,7 @@ public class GeminiService {
         try {
             String rawResponse = webClient.post()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/v1beta/models/gemini-3.5-flash:generateContent")
+                            .path("/v1beta/models/gemini-1.5-flash:generateContent")
                             .queryParam("key", apiKey)
                             .build())
                     .bodyValue(body)
@@ -73,7 +73,7 @@ public class GeminiService {
             return procesarIntencion(rawResponse);
 
         } catch (Exception e) {
-            return "Error con Gemini 3.5: " + e.getMessage();
+            return "Error con Gemini 1.5: " + e.getMessage();
         }
     }
 
