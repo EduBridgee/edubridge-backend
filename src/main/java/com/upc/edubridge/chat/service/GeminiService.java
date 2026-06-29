@@ -47,7 +47,7 @@ public class GeminiService {
                 "Calcula la fecha según lo que diga el usuario (ej: 'mañana a las 7pm').";
 
         Map<String, Object> body = Map.of(
-                "model", "llama-3.3-70b-specdec",
+                "model", "llama-3.3-70b-versatile",
                 "messages", List.of(
                         Map.of("role", "system", "content", superPrompt),
                         Map.of("role", "user", "content", userMessage)
