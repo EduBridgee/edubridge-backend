@@ -230,7 +230,7 @@ public class GeminiService {
                 if (!recursosFiltrados.isEmpty()) {
                     String listaRecursosStr = recursosFiltrados.stream()
                             .map(r -> String.format("📂 *%s* (%s) - Rating: %.1f★\n   [Ver Recurso](%s)", 
-                                    r.getTitle(), r.getType(), r.getRating(), r.getImg()))
+                                    r.getTitle(), r.getType(), r.getRating(), obtenerUrlRecurso(r)))
                             .collect(Collectors.joining("\n\n"));
                     return textLimpio + "\n\nAquí tienes material de estudio recomendado para *" + cursoNombre + "*:\n\n" + listaRecursosStr;
                 } else {
@@ -241,6 +241,24 @@ public class GeminiService {
             }
         }
         return text;
+    }
+
+    private String obtenerUrlRecurso(com.upc.edubridge.resource.model.Resource r) {
+        String img = r.getImg();
+        if (img != null && img.startsWith("data:")) {
+            try {
+                org.springframework.web.context.request.ServletRequestAttributes attributes = 
+                    (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    jakarta.servlet.http.HttpServletRequest request = attributes.getRequest();
+                    String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+                    return baseUrl + "/api/resources/image/" + r.getId();
+                }
+            } catch (Exception e) {
+                System.err.println("Error al construir URL dinámica de imagen: " + e.getMessage());
+            }
+        }
+        return img != null ? img : "";
     }
 
     private boolean sonCursosSimilares(String c1, String c2) {
