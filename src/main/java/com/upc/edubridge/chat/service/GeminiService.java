@@ -45,7 +45,8 @@ public class GeminiService {
     }
 
     public String getAiResponse(String systemPrompt, String userMessage) {
-        String fechaHoy = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaHoy = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Lima"))
+                .format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         String superPrompt = systemPrompt + "\n\n" +
                 "CONTEXTO TEMPORAL: Hoy es " + fechaHoy + ".\n" +

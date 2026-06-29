@@ -150,7 +150,7 @@ public class ChatController {
             }
         }
 
-        String currentTime = java.time.LocalDateTime.now()
+        String currentTime = java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Lima"))
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
         String systemPrompt = String.format(
