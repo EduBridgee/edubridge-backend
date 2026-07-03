@@ -112,8 +112,9 @@ public class GradeController {
 
     private void actualizarPromedioEstudiante(Student student) {
         List<Grade> notas = gradeRepository.findByStudentId(student.getId());
-        if (!notas.isEmpty()) {
+        if (notas != null && !notas.isEmpty()) {
             double promedio = notas.stream()
+                    .filter(g -> g.getValue() != null)
                     .mapToDouble(Grade::getValue)
                     .average()
                     .orElse(0.0);

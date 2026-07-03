@@ -24,4 +24,12 @@ public class StudentTask {
     private Student student;
 
     private String teacherName;
+
+    private String submissionType;
+    private String submissionFileName;
+    @Column(columnDefinition = "TEXT")
+    private String submissionContent;
+    private String studentComment;
+
+    private Double score;
 }
