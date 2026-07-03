@@ -30,33 +30,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
 
-        
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        
+
         jwt = authHeader.substring(7);
         try {
             userEmail = jwtUtils.extractUsername(jwt);
 
-            
+
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                
+
                 String role = jwtUtils.extractClaim(jwt, claims -> claims.get("role", String.class));
 
-                
+
                 if (jwtUtils.validateToken(jwt, userEmail)) {
                     List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
 
-                    
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
                             null,
@@ -64,16 +64,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    
+
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            
+
             logger.error("No se pudo parsear el JWT Token o ha expirado: " + e.getMessage());
         }
 
-        
+
         filterChain.doFilter(request, response);
     }
 }

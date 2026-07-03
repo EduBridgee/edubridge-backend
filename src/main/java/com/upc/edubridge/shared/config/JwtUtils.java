@@ -16,19 +16,19 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    
+
     private static final String SECRET_STRING = "EduBridgeSuperSecretKeyForJWTTokenSigning2026UPC!";
     private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
 
-    
+
     private static final long JWT_EXPIRATION = 86400000;
 
-    
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -46,15 +46,15 @@ public class JwtUtils {
                 .getBody();
     }
 
-    
+
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    
+
     public String generateToken(String email, String role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role); 
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -65,7 +65,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    
+
     public Boolean validateToken(String token, String email) {
         final String username = extractUsername(token);
         return (username.equals(email) && !isTokenExpired(token));

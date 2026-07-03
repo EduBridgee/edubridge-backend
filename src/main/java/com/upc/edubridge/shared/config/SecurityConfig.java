@@ -43,42 +43,42 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                
+
                 .cors(Customizer.withDefaults())
 
-                
+
                 .csrf(AbstractHttpConfigurer::disable)
 
-                
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                
+
                 .authorizeHttpRequests(auth -> auth
-                        
+
                         .requestMatchers("/api/auth/**", "/error", "/favicon.ico").permitAll()
 
-                        
+
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        
-                        
-                        
+
+
+
                         .requestMatchers("/api/enrollments/**").permitAll()
                         .requestMatchers("/api/notifications/**").permitAll()
                         .requestMatchers("/api/participations/**").permitAll()
                         .requestMatchers("/api/grades/**").permitAll()
-                        .requestMatchers("/api/teachers/**").permitAll()  
-                        .requestMatchers("/api/students/**").permitAll()  
+                        .requestMatchers("/api/teachers/**").permitAll()
+                        .requestMatchers("/api/students/**").permitAll()
 
 
-                        
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        
+
                         .anyRequest().authenticated()
                 )
 
-                
+
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -87,7 +87,7 @@ public class SecurityConfig {
                         })
                 )
 
-                
+
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -99,6 +99,8 @@ public class SecurityConfig {
 
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",
+                "http://localhost:*",
+                "https://localhost:*",
                 "https://*.vercel.app",
                 "http://localhost",
                 "https://localhost",

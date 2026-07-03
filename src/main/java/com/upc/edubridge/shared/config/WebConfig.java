@@ -11,10 +11,12 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
-                        "http://localhost:4200", 
-                        "https://*.vercel.app", 
-                        "http://localhost", 
-                        "https://localhost", 
+                        "http://localhost:4200",
+                        "http://localhost:*",
+                        "https://localhost:*",
+                        "https://*.vercel.app",
+                        "http://localhost",
+                        "https://localhost",
                         "capacitor://localhost",
                         "https://edubrigde.me",
                         "https://*.edubrigde.me",
