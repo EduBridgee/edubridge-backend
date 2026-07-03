@@ -52,6 +52,7 @@ public class ChatController {
         String infoNotas = "No aplica.";
         String infoTutorias = "No hay tutorías programadas.";
         String infoTareasDocente = "No aplica.";
+        String infoEstudiantesDocente = "No aplica.";
         String listaCursosValidada = "No especificados";
 
         if (userIdStr != null) {
@@ -59,7 +60,6 @@ public class ChatController {
                 Long parsedUserId = Long.valueOf(userIdStr);
                 
                 if (role != null && (role.equalsIgnoreCase("ESTUDIANTE") || role.equalsIgnoreCase("estudiante"))) {
-                    // Cursos matriculados
                     List<Enrollment> matriculasActivas = enrollmentRepository.findByStudentId(parsedUserId);
                     if (!matriculasActivas.isEmpty()) {
                         listaCursosValidada = matriculasActivas.stream()
@@ -67,18 +67,16 @@ public class ChatController {
                                 .collect(Collectors.joining(", "));
                     }
 
-                    // Calificaciones
                     List<Grade> notas = gradeRepository.findByStudentId(parsedUserId);
                     if (notas != null && !notas.isEmpty()) {
                         infoNotas = notas.stream()
                                 .map(g -> String.format("- %s (%s): %.1f", 
-                                        g.getCourse().getName(), 
-                                        g.getType().toString(), 
-                                        g.getValue()))
+                                        g.getCourse() != null ? g.getCourse().getName() : "Curso", 
+                                        g.getType() != null ? g.getType().toString() : "Evaluación", 
+                                        g.getValue() != null ? g.getValue() : 0.0))
                                 .collect(Collectors.joining("\n"));
                     }
 
-                    // Tutorías de sus asignaturas
                     if (!matriculasActivas.isEmpty()) {
                         final List<String> nombresCursos = matriculasActivas.stream()
                                 .map(e -> e.getCourse().getName())
@@ -100,9 +98,7 @@ public class ChatController {
                                             t.getStatus()))
                                     .collect(Collectors.joining("\n"));
                         }
-                    }
-                } else if (role != null && (role.equalsIgnoreCase("DOCENTE") || role.equalsIgnoreCase("docente"))) {
-                    // Docente y sus cursos
+                                  } else if (role != null && (role.equalsIgnoreCase("DOCENTE") || role.equalsIgnoreCase("docente"))) {
                     java.util.Optional<Teacher> teacherOpt = teacherRepository.findById(parsedUserId);
                     if (teacherOpt.isPresent()) {
                         Teacher doc = teacherOpt.get();
@@ -110,9 +106,48 @@ public class ChatController {
                             listaCursosValidada = doc.getCourses().stream()
                                     .map(c -> c.getName())
                                     .collect(Collectors.joining(", "));
+                            
+                            List<Long> courseIds = doc.getCourses().stream()
+                                    .map(c -> c.getId())
+                                    .collect(Collectors.toList());
+                            
+                            List<Enrollment> matriculasCursos = enrollmentRepository.findAll().stream()
+                                    .filter(e -> e.getCourse() != null && courseIds.contains(e.getCourse().getId()))
+                                    .collect(Collectors.toList());
+                            
+                            if (!matriculasCursos.isEmpty()) {
+                                infoEstudiantesDocente = matriculasCursos.stream()
+                                        .map(e -> String.format("- Curso: %s | Alumno: %s (Código: %s, Email: %s)", 
+                                                e.getCourse().getName(),
+                                                e.getStudent() != null ? e.getStudent().getName() : "Desconocido",
+                                                e.getStudent() != null ? e.getStudent().getCode() : "N/A",
+                                                e.getStudent() != null ? e.getStudent().getEmail() : "N/A"))
+                                        .collect(Collectors.joining("\n"));
+                            } else {
+                                infoEstudiantesDocente = "No hay alumnos matriculados en tus cursos actualmente.";
+                            }
+
+                            List<Grade> notasAlumnosDocente = gradeRepository.findAll().stream()
+                                    .filter(g -> g.getCourse() != null && courseIds.contains(g.getCourse().getId()))
+                                    .collect(Collectors.toList());
+                            
+                            if (!notasAlumnosDocente.isEmpty()) {
+                                infoNotas = notasAlumnosDocente.stream()
+                                        .map(g -> String.format("- Alumno: %s | Curso: %s | Evaluacion: %s | Nota: %.1f", 
+                                                g.getStudent() != null ? g.getStudent().getName() : "Desconocido",
+                                                g.getCourse() != null ? g.getCourse().getName() : "Curso",
+                                                g.getType() != null ? g.getType().toString() : "Evaluación",
+                                                g.getValue() != null ? g.getValue() : 0.0))
+                                        .collect(Collectors.joining("\n"));
+                            } else {
+                                infoNotas = "No hay notas registradas para tus cursos actualmente.";
+                            }
+                            System.out.println("DEBUG CHATBOT FOR TEACHER: " + doc.getName());
+                            System.out.println("DEBUG courseIds: " + courseIds);
+                            System.out.println("DEBUG matriculasCursos size: " + matriculasCursos.size());
+                            System.out.println("DEBUG notasAlumnosDocente size: " + notasAlumnosDocente.size());
                         }
                         
-                        // Tutorías programadas con él
                         String docName = doc.getName();
                         List<TutoringSession> todasTutorias = tutoringRepository.findAll();
                         List<TutoringSession> tutoriasDoc = todasTutorias.stream()
@@ -131,7 +166,6 @@ public class ChatController {
                         }
                     }
                     
-                    // Tareas del docente
                     List<TeacherTask> tareas = teacherTaskRepository.findAll();
                     if (!tareas.isEmpty()) {
                         infoTareasDocente = tareas.stream()
@@ -143,7 +177,7 @@ public class ChatController {
                                         t.getStatus(),
                                         t.getDueDate()))
                                 .collect(Collectors.joining("\n"));
-                    }
+                    }        }
                 }
             } catch (Exception e) {
                 System.err.println("Error al recuperar contexto para el asistente AI: " + e.getMessage());
@@ -157,17 +191,18 @@ public class ChatController {
                 "Eres el asistente oficial de la plataforma universitaria EduBridge. Tu nombre es EduBridge AI.\n" +
                 "DATOS DE USUARIO: Nombre: %s | Rol: %s | Hora actual: %s.\n" +
                 "CURSOS RELACIONADOS: [%s].\n\n" +
-                "CALIFICACIONES REALES (Solo estudiantes):\n%s\n\n" +
+                "CALIFICACIONES DE ESTUDIANTES:\n%s\n\n" +
                 "TUTORÍAS PROGRAMADAS:\n%s\n\n" +
                 "TAREAS/RECORDATORIOS DOCENTE:\n%s\n\n" +
+                "ALUMNOS MATRICULADOS EN TUS CURSOS (Solo docente/admin):\n%s\n\n" +
                 "INSTRUCCIÓN GENERAL:\n" +
                 "- Responde de manera amigable, concisa y humana.\n" +
-                "- Responde las preguntas sobre notas, promedios y tutorías basándote estrictamente en los datos reales proveídos arriba. Si no hay datos, indícalo educadamente.\n" +
+                "- Responde las preguntas sobre notas, promedios, tutorías y listas de alumnos matriculados basándote estrictamente en los datos reales proveídos arriba. Si no hay datos, indícalo educadamente.\n" +
                 "- Para agendar una tutoría, usa el formato [DATA_TUTORING:Nombre del Curso|YYYY-MM-DDTHH:mm:ss] al final de tu respuesta.\n" +
                 "- Si un docente te pide crear un recordatorio o tarea, responde con normalidad y al final añade exactamente esto: [CREATE_TEACHER_TASK:Título de la tarea|Curso o Tag|YYYY-MM-DD].\n" +
                 "- Si te piden cancelar una tutoría, identifica su ID de la lista de tutorías de arriba y añade exactamente esto al final de tu respuesta: [CANCEL_TUTORING:ID].\n" +
-                "- Si te piden recursos, PDFs o material de estudio de un curso, añade exactamente esto al final: [RECOMMEND_RESOURCE:Nombre del Curso].",
-                name, role, currentTime, listaCursosValidada, infoNotas, infoTutorias, infoTareasDocente
+                "- Si te piden recursos, PDFs o material de estudio de un curso, añade exactamente esto al final: [RECOMMEND_RESOURCE:Nombre del Curso]. Nunca uses esta etiqueta de recomendación de recursos si el Rol del usuario conectado es DOCENTE o TEACHER.",
+                name, role, currentTime, listaCursosValidada, infoNotas, infoTutorias, infoTareasDocente, infoEstudiantesDocente
         );
 
         String answer = geminiService.getAiResponse(systemPrompt, message);
