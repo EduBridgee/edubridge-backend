@@ -15,4 +15,5 @@ public class LoginResponse {
     private String name;
     private String email;
     private String role;
+    private Boolean requires2fa;
 }

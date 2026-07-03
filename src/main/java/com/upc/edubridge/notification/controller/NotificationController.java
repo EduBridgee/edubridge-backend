@@ -4,7 +4,6 @@ import com.upc.edubridge.notification.model.Notification;
 import com.upc.edubridge.notification.repository.NotificationRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -40,13 +40,14 @@ public class NotificationController {
 
     @Operation(
             summary = "Obtener notificaciones por estudiante",
-            description = "Retorna la lista de alertas de un alumno ordenadas por fecha de creación descendente (las más recientes primero)."
+            description = "Retorna la lista de alertas activas (no leídas) de un alumno ordenadas por fecha de creación descendente (las más recientes primero)."
     )
     @GetMapping("/student/{studentId}")
     public List<Notification> getMyNotifications(
             @Parameter(description = "ID del estudiante para filtrar sus alertas", example = "4")
             @PathVariable Long studentId) {
-        return notificationRepository.findByStudentIdOrderByCreatedAtDesc(studentId);
+        
+        return notificationRepository.findByStudentIdAndIsReadFalseOrderByCreatedAtDesc(studentId);
     }
 
     @Operation(
@@ -62,9 +63,14 @@ public class NotificationController {
             @Parameter(description = "ID único de la notificación", example = "10")
             @PathVariable Long id) {
         return notificationRepository.findById(id).map(notif -> {
-            notif.setRead(true);
-            notificationRepository.save(notif);
-            return ResponseEntity.ok().build();
+            notif.setRead(true); 
+            notificationRepository.save(notif); 
+
+            
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Notificación marcada como leída correctamente en Neon."
+            ));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

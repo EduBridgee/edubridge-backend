@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/participations")
 @Tag(name = "Participación y Conducta", description = "Endpoints para la consulta de observaciones conductuales (US07)")
-@CrossOrigin(origins = "http://localhost:4200")
 public class StudentParticipationController {
 
     @Autowired

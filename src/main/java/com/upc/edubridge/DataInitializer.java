@@ -14,10 +14,12 @@ public class DataInitializer implements CommandLineRunner {
 
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    public DataInitializer(CourseRepository courseRepository, StudentRepository studentRepository) {
+    public DataInitializer(CourseRepository courseRepository, StudentRepository studentRepository, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -25,32 +27,6 @@ public class DataInitializer implements CommandLineRunner {
 
         System.out.println(">> EduBridge: Sincronizando con base de datos real...");
 
-        if (courseRepository.count() == 0) {
-            courseRepository.save(Course.builder()
-                    .name("Ecuaciones Diferenciales")
-                    .code("MA264")
-                    .credits(4)
-                    .category("Ciencias")
-                    .icon("📐")
-                    .build());
 
-            courseRepository.save(Course.builder()
-                    .name("Arquitectura de Computadoras")
-                    .code("CC123")
-                    .credits(4)
-                    .category("Computación")
-                    .icon("💻")
-                    .build());
-
-            courseRepository.save(Course.builder()
-                    .name("Física II")
-                    .code("MA466")
-                    .credits(5)
-                    .category("Ciencias")
-                    .icon("⚡")
-                    .build());
-
-            System.out.println(">> EduBridge: Cursos académicos inicializados.");
-        }
     }
 }
