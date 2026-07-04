@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Estudiantes", description = "Endpoints para la gestión de perfiles estudiantiles y métricas académicas")
 public class StudentController {
 
@@ -111,5 +110,14 @@ public class StudentController {
         if (student.getAverageGrade() == null) student.setAverageGrade(0.0);
         if (student.getRiskLevel() == null) student.setRiskLevel("Bajo");
         return studentRepository.save(student);
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteStudent(@PathVariable Long id) {
+        return studentRepository.findById(id).map(student -> {
+            studentRepository.delete(student);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

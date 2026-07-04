@@ -58,6 +58,7 @@ public class AuthService {
             return Optional.empty();
         }
 
+        // Check if 2FA is enabled for this user email
         boolean is2faEnabled = is2faEnabled(request.getEmail());
         if (is2faEnabled) {
             if (request.getTwoFactorCode() != null && !request.getTwoFactorCode().trim().isEmpty()) {
@@ -68,6 +69,7 @@ public class AuthService {
                     throw new org.springframework.security.authentication.BadCredentialsException("Código 2FA incorrecto");
                 }
             } else {
+                // 2FA required, but no code sent yet. Return meta to prompt frontend.
                 return Optional.of(Map.of(
                     "requires2fa", true,
                     "email", userMap.get("email"),

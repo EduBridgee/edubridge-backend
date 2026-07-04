@@ -2,7 +2,11 @@ package com.upc.edubridge.teacher.model;
 
 import com.upc.edubridge.student.model.Student;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity

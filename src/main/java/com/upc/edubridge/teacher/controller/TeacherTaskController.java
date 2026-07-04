@@ -19,7 +19,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/teacher-tasks")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Tareas del Docente", description = "Endpoints para la gestión de recordatorios y actividades pendientes de los profesores")
 public class TeacherTaskController {
 
