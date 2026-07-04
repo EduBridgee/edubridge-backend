@@ -19,7 +19,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
-@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Cursos", description = "Endpoints para la gestión del catálogo de cursos de EduBridge")
 public class CourseController {
 
